@@ -1,0 +1,5 @@
+@URL=http://localhost:8081/api/v1
+
+
+### - criar jogador -
+POST {{URL}}/jogadores HTTP/1.1
