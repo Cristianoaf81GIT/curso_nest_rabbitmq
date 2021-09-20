@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CriarJogadorDTO } from 'src/dtos/criar-jogador.dto';
-import { Jogador } from 'src/interfaces/jogador.interface';
+import { CriarJogadorDTO } from '../dtos/criar-jogador.dto';
+import { Jogador } from '../interfaces/jogador.interface';
 import { v4 as uuidV4 } from 'uuid';
 
 @Injectable()
@@ -9,7 +9,15 @@ export class JogadoresService {
   private jogadores: Jogador[] = [];
 
   async criarAtualizarJogador(criarJogadorDto: CriarJogadorDTO): Promise<void> {
-    this.criar(criarJogadorDto);
+    const { email } = criarJogadorDto;
+    const jogadorEncontrado = await this.jogadores.find(
+      (jogador) => jogador.email === email,
+    );
+    if (jogadorEncontrado) {
+      this.atualizar(jogadorEncontrado, criarJogadorDto);
+    } else {
+      this.criar(criarJogadorDto);
+    }
   }
 
   private criar(criarJogadorDto: CriarJogadorDTO): void {
@@ -25,5 +33,17 @@ export class JogadoresService {
     };
     this.jogadores.push(jogador);
     this.logger.log(`criaJogadorDto: ${JSON.stringify(jogador)}`);
+  }
+
+  private atualizar(
+    jogadorEncontrado: Jogador,
+    criarJogdorDto: CriarJogadorDTO,
+  ): void {
+    const { nome } = criarJogdorDto;
+    jogadorEncontrado.nome = nome;
+  }
+
+  async consultarTodosJogadores(): Promise<Jogador[]> {
+    return this.jogadores;
   }
 }
