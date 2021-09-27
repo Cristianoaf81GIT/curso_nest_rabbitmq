@@ -1,0 +1,5 @@
+@URL=http://localhost:8081/api/v1
+
+
+### - deletar jogador -
+DELETE  {{URL}}/jogadores?email=romualdotenista@smartranking.com HTTP/1.1
