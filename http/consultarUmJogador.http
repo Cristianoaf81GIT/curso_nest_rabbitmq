@@ -2,4 +2,4 @@
 
 
 ### - consultar jogador -
-GET {{URL}}/jogadores?email=joaotenista@email.com HTTP/1.1
+GET {{URL}}/jogadores?email=romualdotenista@smartranking.com HTTP/1.1

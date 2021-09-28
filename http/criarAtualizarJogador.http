@@ -6,7 +6,7 @@ POST {{URL}}/jogadores HTTP/1.1
 Content-Type: application/json
 
 {
-  "telefoneCelular": "5535998410128",
-  "email": "romualdotenista@smartranking.com",
-  "nome": "romualdo francisco da silva filho"
+  "telefoneCelular": "5535998410123",
+  "email": "ronilsom@smartranking.com",
+  "nome": "ronilsom paulo da silva"
 }

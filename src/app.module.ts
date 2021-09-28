@@ -7,9 +7,9 @@ import { MongooseModule } from '@nestjs/mongoose';
       'mongodb+srv://cristianoaf81:mongoAtlasCr2020@cluster0.cmkuy.gcp.mongodb.net/smartRanking?retryWrites=true&w=majority',
       {
         useNewUrlParser: true,
-        useCreateIndex: true,
+        autoIndex: true,
+        autoCreate: true,
         useUnifiedTopology: true,
-        useFindAndModify: false,
       },
     ),
     JogadoresModule,
