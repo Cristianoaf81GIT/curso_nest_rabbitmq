@@ -6,7 +6,7 @@ POST {{URL}}/jogadores HTTP/1.1
 Content-Type: application/json
 
 {
-  "telefoneCelular": "5535998410123",
-  "email": "ronilsom@smartranking.com",
-  "nome": "ronilsom paulo da silva"
+  "telefoneCelular": "55678993",
+  "email": "robsom@smartranking.com",
+  "nome": "robsom gomes"
 }

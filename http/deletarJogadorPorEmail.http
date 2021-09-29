@@ -2,4 +2,4 @@
 
 
 ### - deletar jogador -
-DELETE  {{URL}}/jogadores?email=romualdotenista@smartranking.com HTTP/1.1
+DELETE  {{URL}}/jogadores?email=ronilsom@smartranking.com HTTP/1.1
