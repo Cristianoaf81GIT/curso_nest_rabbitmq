@@ -4,6 +4,8 @@ import {
   Post,
   UsePipes,
   ValidationPipe,
+  Get,
+  Param,
 } from '@nestjs/common';
 import { Categoria } from '../interfaces/categoria.interface';
 import { CriarCategoriaDto } from '../dtos/criar-categoria.dto';
@@ -19,5 +21,15 @@ export class CategoriasController {
     @Body() criarCategoriaDto: CriarCategoriaDto,
   ): Promise<Categoria> {
     return await this.categoriaService.criarCategoria(criarCategoriaDto);
+  }
+
+  @Get()
+  async consultarCategorias(): Promise<Array<Categoria>> {
+    return await this.categoriaService.consultarTodasCategorias();
+  }
+
+  @Get('/:categoria')
+  async consultarCategoriaPorId(@Param('categoria') categoria: string) {
+    return await this.categoriaService.consultarCategoriaPorId(categoria);
   }
 }
