@@ -5,13 +5,16 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CriarCategoriaDto } from 'src/dtos/criar-categoria.dto';
-import { Categoria } from 'src/interfaces/categoria.interface';
+import { AtualizarCategoriaDto } from '../dtos/atualizar-categoria-dto';
+import { CriarCategoriaDto } from '../dtos/criar-categoria.dto';
+import { Categoria } from '../interfaces/categoria.interface';
+import { JogadoresService } from 'src/jogadores/jogadores.service';
 
 @Injectable()
 export class CategoriasService {
   constructor(
     @InjectModel('Categoria') private readonly categoriaModel: Model<Categoria>,
+    private readonly jogadoresService: JogadoresService,
   ) {}
 
   async criarCategoria(
@@ -28,16 +31,16 @@ export class CategoriasService {
     }
 
     const categoriaCriada = new this.categoriaModel(criarCategoriaDto);
-    return await categoriaCriada.save();
+    return categoriaCriada.save();
   }
 
   async consultarTodasCategorias(): Promise<Array<Categoria>> {
-    return await this.categoriaModel.find().exec();
+    return this.categoriaModel.find().populate('jogadores').exec();
   }
 
   async consultarCategoriaPorId(categoria: string): Promise<Categoria> {
     const categoriaEncontrada = await this.categoriaModel
-      .findOne({ _id: categoria })
+      .findOne({ categoria })
       .exec();
     if (!categoriaEncontrada) {
       throw new NotFoundException(
@@ -45,5 +48,58 @@ export class CategoriasService {
       );
     }
     return categoriaEncontrada;
+  }
+
+  async atualizarCategoria(
+    categoria: string,
+    atualizarCategoriaDto: AtualizarCategoriaDto,
+  ): Promise<void> {
+    const categoriaEncontrada = await this.categoriaModel
+      .findOne({ categoria })
+      .exec();
+    if (!categoriaEncontrada) {
+      throw new NotFoundException(
+        `a categoria ${categoria} informada não foi encontrada`,
+      );
+    }
+
+    await this.categoriaModel
+      .findOneAndUpdate({ categoria }, { $set: atualizarCategoriaDto })
+      .exec();
+  }
+
+  async atribuirCategoriaJogador(params: string[]): Promise<void> {
+    const categoria = params['categoria'];
+    const idJogador = params['idJogador'];
+    const categoriaEncontrada = await this.categoriaModel
+      .findOne({ categoria })
+      .exec();
+    const jogadorEncontrado = await this.jogadoresService.consultarJogadorPorId(
+      idJogador,
+    );
+
+    const jogadorJaCadastradoCategoria = this.categoriaModel
+      .find({ categoria })
+      .where('jogadores')
+      .in(idJogador)
+      .exec();
+
+    if (!categoriaEncontrada)
+      throw new BadRequestException(`Categoria ${categoria} não encontrada`);
+
+    if (!jogadorEncontrado)
+      throw new BadRequestException(`jogador ${idJogador} não encontrado`);
+
+    if (jogadorJaCadastradoCategoria)
+      throw new BadRequestException(
+        `jogador ${idJogador} já cadastrado na categoria`,
+      );
+
+    categoriaEncontrada.jogadores.push(idJogador);
+
+    this.categoriaModel.findOneAndUpdate(
+      { categoria },
+      { $set: categoriaEncontrada },
+    );
   }
 }
