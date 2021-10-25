@@ -1,10 +1,4 @@
-import {
-  ArrayMinSize,
-  IsArray,
-  IsDateString,
-  IsNotEmpty,
-  MinLength,
-} from 'class-validator';
+import { ArrayMinSize, IsArray, IsNotEmpty, MinLength } from 'class-validator';
 import { Jogador } from '../interfaces/jogador.interface';
 
 export class CriarDesafioDto {

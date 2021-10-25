@@ -12,6 +12,7 @@ import { Desafio } from '../interfaces/desafio.interface';
 import { Jogador } from '../interfaces/jogador.interface';
 import { CategoriasService } from '../categorias/categorias.service';
 import { DesafioStatus } from '../enums/desafio-status.enum';
+import { AtualizarDesafioDto } from '../dtos/atualizar-desafio.dto';
 
 // https://gitlab.com/dfs-treinamentos/smart-ranking/api-smartranking-backend/-/blob/desafios_partidas/src/desafios/desafios.service.ts
 
@@ -116,6 +117,44 @@ export class DesafiosService {
       .populate('solicitante')
       .populate('jogadores')
       .populate('partida')
+      .exec();
+  }
+
+  async atualizarDesafio(
+    _id: string,
+    atualizarDesafioDto: AtualizarDesafioDto,
+  ): Promise<Desafio> {
+    this.logger.debug(
+      `id: ${_id}, dto: ${JSON.stringify(atualizarDesafioDto)}`,
+    );
+    const desafioEncontrado = await this.desafioModel.findById(_id).exec();
+    if (!desafioEncontrado)
+      throw new NotFoundException(`Desafio ${_id} não cadastrado!`);
+
+    if (atualizarDesafioDto.status) {
+      desafioEncontrado.dataHoraResposta = new Date();
+    }
+    const oldStatus = desafioEncontrado.status;
+    const oldDataHoraDesafio = desafioEncontrado.dataHoraDesafio;
+    desafioEncontrado.status = atualizarDesafioDto.status
+      ? atualizarDesafioDto.status
+      : oldStatus;
+    desafioEncontrado.dataHoraDesafio = atualizarDesafioDto.dataHoraDesafio
+      ? atualizarDesafioDto.dataHoraDesafio
+      : oldDataHoraDesafio;
+    this.logger.debug(
+      `desafio atualizado: ${JSON.stringify(desafioEncontrado)}`,
+    );
+    return await this.desafioModel
+      .findOneAndUpdate(
+        { _id },
+        {
+          $set: {
+            status: desafioEncontrado.status,
+            dataHoraDesafio: desafioEncontrado.dataHoraDesafio,
+          },
+        },
+      )
       .exec();
   }
 }

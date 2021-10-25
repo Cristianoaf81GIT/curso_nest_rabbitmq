@@ -28,6 +28,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
       `Http Status: ${status}, Error Message: ${JSON.stringify(message)}`,
     );
 
+    this.logger.debug(`${exception} excessao original`);
+
     response.status(status).json({
       timestamp: new Date().toISOString(),
       path: request.url,
