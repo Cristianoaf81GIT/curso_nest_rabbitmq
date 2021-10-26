@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
@@ -13,6 +14,8 @@ import { Jogador } from '../interfaces/jogador.interface';
 import { CategoriasService } from '../categorias/categorias.service';
 import { DesafioStatus } from '../enums/desafio-status.enum';
 import { AtualizarDesafioDto } from '../dtos/atualizar-desafio.dto';
+import { AtribuirDesafioPartidaDto } from '../dtos/atribuir-desafio-partida.dto';
+import { Partida } from '../interfaces/partida.interface';
 
 // https://gitlab.com/dfs-treinamentos/smart-ranking/api-smartranking-backend/-/blob/desafios_partidas/src/desafios/desafios.service.ts
 
@@ -22,6 +25,7 @@ export class DesafiosService {
 
   constructor(
     @InjectModel('Desafio') private readonly desafioModel: Model<Desafio>,
+    @InjectModel('Partida') private readonly partidaModel: Model<Partida>,
     private readonly jogadoresService: JogadoresService,
     private readonly categoriaService: CategoriasService,
   ) {}
@@ -156,5 +160,40 @@ export class DesafiosService {
         },
       )
       .exec();
+  }
+
+  async atribuirDesafioPartida(
+    _id: string,
+    atribuirDesafioPartidaDto: AtribuirDesafioPartidaDto,
+  ): Promise<void> {
+    const desafioEncontrado = await this.desafioModel.findById(_id).exec();
+    if (!desafioEncontrado) {
+      throw new BadRequestException(`Desafio ${_id} não cadastrado!`);
+    }
+    const jogadorFilter = desafioEncontrado.jogadores.filter(
+      (jogador) => jogador._id == atribuirDesafioPartidaDto.def,
+    );
+    this.logger.log(`desafioEncontrado: ${desafioEncontrado}`);
+    this.logger.log(`jogadorFilter: ${jogadorFilter}`);
+
+    if (jogadorFilter.length == 0) {
+      throw new BadRequestException(
+        `O jogador vencedor não faz parte do desafio!`,
+      );
+    }
+    const partidaCriada = new this.partidaModel(atribuirDesafioPartidaDto);
+    partidaCriada.categoria = desafioEncontrado.categoria;
+    partidaCriada.jogadores = desafioEncontrado.jogadores;
+    const resultado = await partidaCriada.save();
+    desafioEncontrado.status = DesafioStatus.REALIZADO;
+    desafioEncontrado.partida = resultado._id;
+    try {
+      await this.desafioModel
+        .findOneAndUpdate({ _id }, { $set: desafioEncontrado })
+        .exec();
+    } catch (error) {
+      await this.partidaModel.deleteOne({ _id: resultado._id }).exec();
+      throw new InternalServerErrorException();
+    }
   }
 }
