@@ -196,4 +196,26 @@ export class DesafiosService {
       throw new InternalServerErrorException();
     }
   }
+
+  async deletarDesafio(_id: string): Promise<void> {
+    const desafioEncontrado = await this.desafioModel.findById(_id).exec();
+
+    if (!desafioEncontrado) {
+      throw new BadRequestException(`Desafio ${_id} não cadastrado!`);
+    }
+
+    desafioEncontrado.status = DesafioStatus.CANCELADO;
+
+    await this.desafioModel
+      .findOneAndUpdate(
+        { _id },
+        {
+          $set: {
+            status: desafioEncontrado.status,
+            dataHoraSolicitacao: new Date(),
+          },
+        },
+      )
+      .exec();
+  }
 }
